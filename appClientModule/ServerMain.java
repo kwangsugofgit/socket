@@ -40,11 +40,11 @@ public class ServerMain {
             InetSocketAddress ipep = new InetSocketAddress(HostInfo.Port);
             server.bind(ipep);
              
-	        Util.DEBUG(Util.DEBUG_ALL, String.format("Sever started. [port:%d]", HostInfo.Port));
+	        Util.DEBUG(Util.DEBUG_2, String.format("Sever started. [port:%d]", HostInfo.Port));
             while (true) { 
 	            //LISTEN 대기
 	            Socket client = server.accept();
-		        Util.DEBUG(Util.DEBUG_2, String.format("Connection address = [%s]", client.getLocalAddress()));
+		        Util.DEBUG(Util.DEBUG_ALL, String.format("Connection address = [%s]", client.getLocalAddress()));
 	            
 	            Thread process = new ProcessThread(client);
 	            process.start();
@@ -101,10 +101,8 @@ public class ServerMain {
                 InputStream reciever = client.getInputStream();) {
             	
             	long sTime = System.currentTimeMillis();
-    			cntOfConnect++;
 
     			BaseInfo recieveinfo = new BaseInfo();
-    			recieveinfo.setConnectedIndex(cntOfConnect);
 
             	SocketCommon socketCommon = new SocketCommon();
 
@@ -141,18 +139,20 @@ public class ServerMain {
             	// Client에서 데이터 받기.
             	if (!"P".equals(recieveinfo.getKind())) { //P. Server 처리 로직 업음.
             		
+        			cntOfConnect++;
+        			recieveinfo.setConnectedIndex(cntOfConnect);
 	            	recieveinfo.setUuid(UUID.randomUUID().toString());
 	            	
 	            	recieveinfo = ClientRecieve(reciever, recieveinfo);
 	
 	            	// client에서 보내준 메세지를 쌓아 놓는다.
             	    datas.add(recieveinfo);
-	            	Util.DEBUG(Util.DEBUG_2, String.format("add[%d], count[%d]", recieveinfo.getConnectedIndex(), datas.size()));
-	            	recieveinfo.println();
+	            	Util.DEBUG(Util.DEBUG_2, String.format("add[%d], size[%d], [%s -> %s]", recieveinfo.getConnectedIndex(), datas.size(), recieveinfo.getId(), recieveinfo.getTargetId()));
+	            	Util.DEBUG(Util.DEBUG_ALL, recieveinfo.println());
             	}
             	
             	long eTime = System.currentTimeMillis();
-		        Util.DEBUG(Util.DEBUG_2, String.format("time : %,d", eTime - sTime));
+		        Util.DEBUG(Util.DEBUG_ALL, String.format("time : %,d", eTime - sTime));
  
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

@@ -265,8 +265,8 @@ public class BaseInfo {
 		}
 		return datalen;
 	}
-	public void println() {
-		System.out.println("{{\"kind\",\"" + getKind() + "\"}{\"id\",\"" + getId() + "\"},{\"targetId\",\"" + getId() + "\"},{\"message\",\"" + getMessage() + "\"}}");
+	public String println() {
+		return "{{\"kind\",\"" + getKind() + "\"}{\"id\",\"" + getId() + "\"},{\"targetId\",\"" + getId() + "\"},{\"message\",\"" + getMessage() + "\"}}";
 	}
 	
 }

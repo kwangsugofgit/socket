@@ -22,6 +22,9 @@ import com.socket.vo.HostInfo;
 
 public class ClientMain {
 
+	public static int endProcess = 0;
+	public static String recieveId = "";
+	
 	public static void main(String[] args) {
 		// args[0] : id
 		// args[1] : 구분('F', 'M') F : 파일전송, M : Message, P : 서버에서 값 가져오기.
@@ -37,15 +40,14 @@ public class ClientMain {
 		
 		//------------------------------------------------------
 		// 정기적으로 받는 메세지 체크 
-		sendInfo.setKind("P");
-		ClientThread receiveMsg = new ClientThread(sendInfo);
+		ClientThread receiveMsg = new ClientThread(sendInfo.getId());
 		receiveMsg.start();
 		//------------------------------------------------------
 		
 		sendInfo.setKind(kind);
+		sendInfo.setTargetId(args[2]);
 		String message = "";
 		if (!"P".equals(sendInfo.getKind()) && !"A".equals(sendInfo.getKind())) {
-			sendInfo.setTargetId(args[2]);
 			message = args[3];
 	        // 구분에 따라서 입력값을 체크한다.
 	        if ("F".equals(sendInfo.getKind()) || "C".equals(sendInfo.getKind())) {
@@ -55,14 +57,17 @@ public class ClientMain {
 	        }
 	
 		}
-		Util.debug_level = Util.DEBUG_ALL;
+		Util.debug_level = Util.DEBUG_2;
 		Scanner scan = new Scanner(System.in);
 
 		while (true) {
 			if ("A".equals(kind)) {
 				System.out.print("[" + sendInfo.getId() + "]:");
 				message = scan.nextLine();
-				if ("e".equals(message)) break; //종료
+				if ("e".equals(message)) {
+					endProcess = 1;
+					break; //종료
+				}
 				sendInfo.setMessage(message);
 				sendInfo.setKind("M");
 				recieveInfo = new BaseInfo();
@@ -74,7 +79,7 @@ public class ClientMain {
 	        // socket 통신
 			while (!"B".equals(recieveInfo.getKind())) {
 				recieveInfo = Communication(sendInfo);
-				recieveInfo.println();
+				Util.DEBUG(Util.DEBUG_ALL, recieveInfo.println());
 			}
 			if (!"A".equals(kind)) {
 				break;
@@ -84,22 +89,24 @@ public class ClientMain {
 	}
 	
 	public static class ClientThread extends Thread {
-		BaseInfo sendInfo;
+		BaseInfo sendInfo = new BaseInfo();
 		
-		public ClientThread(BaseInfo sendInfo) {
-			this.sendInfo = sendInfo;
+		public ClientThread(String id) {
+			this.sendInfo.setId(id);
 		}
 		
 		public void run() {
+			this.sendInfo.setKind("P");
 			while (true) {
 				BaseInfo recieveInfo = new BaseInfo();
 		        // socket 통신
 				while (!"B".equals(recieveInfo.getKind())) {
-					recieveInfo = Communication(sendInfo);
-					recieveInfo.println();
+					recieveInfo = Communication(this.sendInfo);
+					Util.DEBUG(Util.DEBUG_ALL, recieveInfo.println());
 				}
 				try {
 					Thread.sleep(1000); // 1초 마다
+					if (endProcess == 1) break;
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -139,8 +146,11 @@ public class ClientMain {
             	// 3. 서버 메세지 출력
             	if ("M".equals(recieveInfo.getKind())) {
             		//recieveInfo = Recieve(new RecieveMsg(), recieveInfo, reciever);
-        	        Util.DEBUG(Util.DEBUG_ALL, String.format(" [메세지 송신 ]"));
-        	        System.out.println(String.format("[%s]", recieveInfo.getId()));
+//        	        Util.DEBUG(Util.DEBUG_ALL, String.format(" [메세지 송신 ]"));
+        	        if (!recieveId.equals(recieveInfo.getId())) {
+        	        	recieveId = recieveInfo.getId(); 
+        	        	System.out.println(String.format("[%s]", recieveInfo.getId()));
+        	        }
         	        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm", Locale.KOREA );
         	        System.out.println(String.format("%s [%s]", recieveInfo.getMessage(), formatter.format(new Date(recieveInfo.getSendTimeMillis()))));
             		
