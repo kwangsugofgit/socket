@@ -7,6 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="D:/workspace/commons-codec-1.11/commons-codec-1.11.jar"/>
+	<classpathentry kind="lib" path="D:/workspace/socket/lib/commons-codec-1.15.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
